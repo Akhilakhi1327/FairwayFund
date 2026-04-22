@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// For deployment, change provider to "postgresql" and add your Supabase connection string.
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  password       String
+  name           String
+  role           String         @default("user") // "user" or "admin"
+  createdAt      DateTime       @default(now())
+  
+  subscription   Subscription?
+  scores         Score[]
+  charityId      String?
+  charityPct     Int            @default(10) // Percentage of subscription going to charity
+  winnings       Winning[]
+}
+
+model Subscription {
+  id             String         @id @default(uuid())
+  userId         String         @unique
+  user           User           @relation(fields: [userId], references: [id])
+  plan           String         // "monthly" or "yearly"
+  status         String         // "active", "inactive", "lapsed"
+  startDate      DateTime       @default(now())
+  renewalDate    DateTime
+}
+
+model Score {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  score          Int            // 1-45 Stableford
+  date           String         // Format: YYYY-MM-DD
+  createdAt      DateTime       @default(now())
+  
+  @@unique([userId, date]) // Ensures one score per date per user
+}
+
+model Charity {
+  id             String         @id @default(uuid())
+  name           String
+  description    String
+  imageUrl       String?
+  featured       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+}
+
+model Draw {
+  id             String         @id @default(uuid())
+  monthYear      String         // e.g. "2026-04"
+  drawnNumbers   String         // e.g. "12, 34, 5, 41, 23"
+  status         String         @default("simulated") // "simulated" or "published"
+  jackpotRollover Float         @default(0)
+  createdAt      DateTime       @default(now())
+  
+  winnings       Winning[]
+}
+
+model Winning {
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  drawId         String
+  draw           Draw           @relation(fields: [drawId], references: [id])
+  matchCount     Int
+  prizeAmount    Float
+  status         String         @default("pending") // pending, verified, paid
+  proofUrl       String?        // screenshot URL
+}
