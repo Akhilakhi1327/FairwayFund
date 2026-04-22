@@ -24,7 +24,7 @@ export default async function DashboardPage() {
               <p style={{ fontWeight: '600', color: user.subscription?.status === 'active' ? 'var(--success)' : 'var(--secondary)' }}>
                 {user.subscription?.status.toUpperCase() || 'NO ACTIVE PLAN'}
               </p>
-              <p style={{ fontSize: '0.9rem', color: var(--gray) }}>
+              <p style={{ fontSize: '0.9rem', color: 'var(--gray)' }}>
                 {user.subscription?.plan === 'monthly' ? 'Monthly Plan' : 'Yearly Plan'}
               </p>
             </div>
